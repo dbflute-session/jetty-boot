@@ -22,7 +22,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.eclipse.jetty.plus.webapp.EnvConfiguration;
 import org.eclipse.jetty.server.Server;
@@ -46,6 +48,8 @@ public class JettyBoot {
     //                                                                          Definition
     //                                                                          ==========
     private static final Logger logger = LoggerFactory.getLogger(JettyBoot.class);
+    protected static final String MAVEN_CONVENTION_WEBAPP = "./src/main/webapp/";
+    protected static final String WEBROOT_RESOURCE_PATH = "/webroot/";
     protected static final String DEFAULT_MARK_DIR = "/tmp/dbflute/jettyboot";
 
     // ===================================================================================
@@ -56,6 +60,7 @@ public class JettyBoot {
     protected boolean development;
     protected boolean browseOnDesktop;
     protected boolean suppressShutdownHook;
+    protected boolean embeddedWebroot; // default is meven convention way
 
     protected Server server;
 
@@ -88,6 +93,11 @@ public class JettyBoot {
         if (!development) {
             throw new IllegalStateException("The option is valid only when development: port=" + port);
         }
+    }
+
+    public JettyBoot useEmbeddedWebroot() {
+        embeddedWebroot = true;
+        return this;
     }
 
     // ===================================================================================
@@ -133,7 +143,7 @@ public class JettyBoot {
     }
 
     protected WebAppContext prepareWebAppContext() {
-        final URL warLocation = JettyBoot.class.getProtectionDomain().getCodeSource().getLocation();
+        final URL warLocation = getWarLocation();
         final String path;
         try {
             path = warLocation.toURI().getPath();
@@ -141,24 +151,51 @@ public class JettyBoot {
             throw new IllegalStateException("server start failed.", e);
         }
         final WebAppContext context = new WebAppContext();
-        if (path.endsWith(".war")) {
+        if (path != null && path.endsWith(".war")) {
             context.setWar(warLocation.toExternalForm());
         } else {
             context.setResourceBase(getResourceBase());
         }
-        final Configuration[] configurations = prepareConfigurations();
-        context.setConfigurations(configurations);
+        context.setResourceBase(getResourceBase());
+        context.setConfigurations(prepareConfigurations());
         context.setContextPath(contextPath);
         return context;
     }
 
+    protected URL getWarLocation() {
+        return JettyBoot.class.getProtectionDomain().getCodeSource().getLocation();
+    }
+
     protected String getResourceBase() {
-        return "./src/main/webapp/";
+        if (embeddedWebroot) { // option
+            final String path = WEBROOT_RESOURCE_PATH;
+            final URL webroot = getClass().getResource(path);
+            if (webroot == null) {
+                throw new IllegalStateException("Not found the webroot resource: path=" + path);
+            }
+            try {
+                return webroot.toURI().toASCIIString();
+            } catch (URISyntaxException e) {
+                throw new IllegalStateException("Illegal URL: " + webroot, e);
+            }
+        } else { // default is here
+            return MAVEN_CONVENTION_WEBAPP;
+        }
     }
 
     protected Configuration[] prepareConfigurations() {
-        return new Configuration[] { new WebInfConfiguration(), new WebXmlConfiguration(), new MetaInfConfiguration(),
-                new FragmentConfiguration(), new EnvConfiguration(), new JettyWebXmlConfiguration() };
+        final List<Configuration> configList = new ArrayList<Configuration>();
+        setupConfigList(configList);
+        return configList.toArray(new Configuration[configList.size()]);
+    }
+
+    protected void setupConfigList(List<Configuration> configList) {
+        configList.add(new WebInfConfiguration());
+        configList.add(new WebXmlConfiguration());
+        configList.add(new MetaInfConfiguration());
+        configList.add(new FragmentConfiguration());
+        configList.add(new EnvConfiguration());
+        configList.add(new JettyWebXmlConfiguration());
     }
 
     // ===================================================================================

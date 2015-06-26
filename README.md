@@ -5,6 +5,9 @@ simple boot library of Jetty
 new JettyBoot(8090, "/harbor").asDevelopment().bootAwait();
 ```
 
+No need to shutdown previous process when you restart it.  
+Automatically shutdown before next process boot
+
 # Quick Trial
 Can boot it by example of LastaFlute:
 

@@ -1,4 +1,5 @@
-# JettyBoot
+JettyBoot
+======================
 simple boot library of Jetty
 
 ```java
@@ -11,11 +12,21 @@ Automatically shutdown before next process boot
 # Quick Trial
 Can boot it by example of LastaFlute:
 
-1. prepare Java8 compile environment
-2. clone https://github.com/dbflute-session/lastaflute-example-harbor
-3. execute the main method of (org.docksidestage.boot) HarborBoot
-4. access to http://localhost:8090/harbor
+1. git clone https://github.com/dbflute-session/lastaflute-example-harbor.git
+2. prepare database by *ReplaceSchema at DBFlute client directory 'dbflute_maihamadb'  
+3. compile it by Java8, on e.g. Eclipse or IntelliJ or ... as Maven project
+4. execute the *main() method of (org.docksidestage.boot) HarborBoot
+5. access to http://localhost:8090/harbor  
+and login by user 'Pixy' and password 'sea', and can see debug log at console.
 
+*ReplaceSchema
+```java
+// call manage.sh at lastaflute-example-harbor/dbflute_maihamadb
+// and select replace-schema in displayed menu
+...:dbflute_maihamadb ...$ sh manage.sh
+```
+
+*main() method
 ```java
 public class HarborBoot {
 
@@ -25,10 +36,8 @@ public class HarborBoot {
 }
 ```
 
-Can login by user 'Pixy' and password 'sea', and can see debug log at console.
-
 # Information
-## Maven Dependency
+## Maven Dependency in pom.xml
 ```xml
 <dependency>
     <groupId>org.dbflute.jetty</groupId>

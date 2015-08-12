@@ -156,7 +156,6 @@ public class JettyBoot {
         } else {
             context.setResourceBase(getResourceBase());
         }
-        context.setResourceBase(getResourceBase());
         context.setConfigurations(prepareConfigurations());
         context.setContextPath(contextPath);
         return context;

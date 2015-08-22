@@ -35,8 +35,6 @@ import org.eclipse.jetty.webapp.MetaInfConfiguration;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.jetty.webapp.WebInfConfiguration;
 import org.eclipse.jetty.webapp.WebXmlConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author p1us2er0
@@ -47,10 +45,9 @@ public class JettyBoot {
     // ===================================================================================
     //                                                                          Definition
     //                                                                          ==========
-    private static final Logger logger = LoggerFactory.getLogger(JettyBoot.class);
     protected static final String MAVEN_CONVENTION_WEBAPP = "./src/main/webapp/";
     protected static final String WEBROOT_RESOURCE_PATH = "/webroot/";
-    protected static final String DEFAULT_MARK_DIR = "/tmp/dbflute/jettyboot";
+    protected static final String DEFAULT_MARK_DIR = "/tmp/dbflute/jettyboot"; // for shutdown hook
 
     // ===================================================================================
     //                                                                           Attribute
@@ -110,13 +107,13 @@ public class JettyBoot {
     }
 
     public JettyBoot startBoot() { // no wait
-        logger.info("...Booting the Jetty: port={} contextPath={}", port, contextPath);
+        log("...Booting the Jetty: port=" + port + " contextPath=" + contextPath);
         if (development) {
             registerShutdownHook();
         }
         prepareServer();
         final URI uri = startServer();
-        logger.info("Boot successful{}: uri={}", development ? " as development" : "", uri);
+        log("Boot successful" + (development ? " as development" : "") + ": url=" + uri);
         if (development) {
             browseOnDesktop(uri);
         }
@@ -210,7 +207,7 @@ public class JettyBoot {
         final File markFile = prepareMarkFile();
         final long lastModified = markFile.lastModified();
         final String exp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS").format(new Date(lastModified));
-        logger.info("...Registering the shutdown hook for the Jetty: lastModified=" + exp);
+        log("...Registering the shutdown hook for the Jetty: lastModified=" + exp);
         new Thread(() -> {
             while (true) {
                 if (needsShutdown(markFile, lastModified)) {
@@ -250,7 +247,7 @@ public class JettyBoot {
     }
 
     protected void shutdownForcedly() {
-        logger.info("...Shuting down the Jetty forcedly: port=" + port);
+        log("...Shuting down the Jetty forcedly: port=" + port);
         close();
     }
 
@@ -313,6 +310,13 @@ public class JettyBoot {
                 throw new IllegalStateException("Failed to destroy the Jetty.", e);
             }
         }
+    }
+
+    // ===================================================================================
+    //                                                                             Logging
+    //                                                                             =======
+    protected void log(String msg) {
+        System.out.println(msg);
     }
 
     // ===================================================================================

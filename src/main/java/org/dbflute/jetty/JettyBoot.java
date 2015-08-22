@@ -107,13 +107,13 @@ public class JettyBoot {
     }
 
     public JettyBoot startBoot() { // no wait
-        log("...Booting the Jetty: port=" + port + " contextPath=" + contextPath);
+        info("...Booting the Jetty: port=" + port + " contextPath=" + contextPath);
         if (development) {
             registerShutdownHook();
         }
         prepareServer();
         final URI uri = startServer();
-        log("Boot successful" + (development ? " as development" : "") + ": url=" + uri);
+        info("Boot successful" + (development ? " as development" : "") + ": url=" + uri);
         if (development) {
             browseOnDesktop(uri);
         }
@@ -207,7 +207,7 @@ public class JettyBoot {
         final File markFile = prepareMarkFile();
         final long lastModified = markFile.lastModified();
         final String exp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS").format(new Date(lastModified));
-        log("...Registering the shutdown hook for the Jetty: lastModified=" + exp);
+        info("...Registering the shutdown hook for the Jetty: lastModified=" + exp);
         new Thread(() -> {
             while (true) {
                 if (needsShutdown(markFile, lastModified)) {
@@ -247,7 +247,7 @@ public class JettyBoot {
     }
 
     protected void shutdownForcedly() {
-        log("...Shuting down the Jetty forcedly: port=" + port);
+        info("...Shuting down the Jetty forcedly: port=" + port);
         close();
     }
 
@@ -315,8 +315,8 @@ public class JettyBoot {
     // ===================================================================================
     //                                                                             Logging
     //                                                                             =======
-    protected void log(String msg) {
-        System.out.println(msg);
+    protected void info(String msg) {
+        System.out.println(msg); // console as default not to depends specific logger
     }
 
     // ===================================================================================

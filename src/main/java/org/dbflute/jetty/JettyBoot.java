@@ -74,6 +74,11 @@ public class JettyBoot {
         return this;
     }
 
+    public JettyBoot asDevelopment(boolean development) {
+        this.development = development;
+        return this;
+    }
+
     public JettyBoot browseOnDesktop() {
         assertDevelopmentState();
         browseOnDesktop = true;

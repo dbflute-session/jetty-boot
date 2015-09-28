@@ -143,7 +143,7 @@ public class JettyBoot {
         }
         prepareServer();
         final URI uri = startServer();
-        info("Boot successful" + (development ? " as development" : "") + ": url=" + uri);
+        info("Boot successful" + (development ? " as development" : "") + ": url -> " + uri);
         if (development) {
             browseOnDesktop(uri);
         }

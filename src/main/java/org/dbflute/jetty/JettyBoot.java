@@ -57,7 +57,11 @@ public class JettyBoot {
     protected boolean development;
     protected boolean browseOnDesktop;
     protected boolean suppressShutdownHook;
-    protected boolean embeddedWebroot; // default is meven convention way
+    protected boolean useEmbeddedWebroot; // default is meven convention way
+    protected boolean useAnnotationDetect;
+    protected boolean useMetaInfoResourceDetect;
+    protected boolean useTldDetect;
+    protected boolean useWebFragmentsDetect;
 
     protected Server server;
 
@@ -98,7 +102,28 @@ public class JettyBoot {
     }
 
     public JettyBoot useEmbeddedWebroot() {
-        embeddedWebroot = true;
+        useEmbeddedWebroot = true;
+        return this;
+    }
+
+    // TODO jflute jettyboot: empty method for now, will implement later (2015/09/28)
+    public JettyBoot useAnnotationDetect() {
+        useAnnotationDetect = true;
+        return this;
+    }
+
+    public JettyBoot useMetaInfoResourceDetect() {
+        useMetaInfoResourceDetect = true;
+        return this;
+    }
+
+    public JettyBoot useTldDetect() {
+        useTldDetect = true;
+        return this;
+    }
+
+    public JettyBoot useWebFragmentsDetect() {
+        useWebFragmentsDetect = true;
         return this;
     }
 
@@ -118,7 +143,7 @@ public class JettyBoot {
         }
         prepareServer();
         final URI uri = startServer();
-        info("Boot successful" + (development ? " as development" : "") + ": url=" + uri);
+        info("Boot successful" + (development ? " as development" : "") + ": url -> " + uri);
         if (development) {
             browseOnDesktop(uri);
         }
@@ -168,7 +193,7 @@ public class JettyBoot {
     }
 
     protected String getResourceBase() {
-        if (embeddedWebroot) { // option
+        if (useEmbeddedWebroot) { // option
             final String path = WEBROOT_RESOURCE_PATH;
             final URL webroot = getClass().getResource(path);
             if (webroot == null) {
@@ -193,8 +218,12 @@ public class JettyBoot {
     protected void setupConfigList(List<Configuration> configList) {
         configList.add(new WebInfConfiguration());
         configList.add(new WebXmlConfiguration());
-        configList.add(new MetaInfConfiguration());
-        configList.add(new FragmentConfiguration());
+        if (useMetaInfoResourceDetect || useTldDetect || useWebFragmentsDetect) {
+            configList.add(new MetaInfConfiguration());
+        }
+        if (useWebFragmentsDetect) {
+            configList.add(new FragmentConfiguration());
+        }
         configList.add(new EnvConfiguration());
         configList.add(new JettyWebXmlConfiguration());
     }

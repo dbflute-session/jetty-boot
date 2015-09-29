@@ -23,11 +23,15 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.eclipse.jetty.annotations.AnnotationConfiguration;
 import org.eclipse.jetty.plus.webapp.EnvConfiguration;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.webapp.Configuration;
 import org.eclipse.jetty.webapp.FragmentConfiguration;
 import org.eclipse.jetty.webapp.JettyWebXmlConfiguration;
@@ -106,7 +110,6 @@ public class JettyBoot {
         return this;
     }
 
-    // TODO jflute jettyboot: empty method for now, will implement later (2015/09/28)
     public JettyBoot useAnnotationDetect() {
         useAnnotationDetect = true;
         return this;
@@ -216,16 +219,70 @@ public class JettyBoot {
     }
 
     protected void setupConfigList(List<Configuration> configList) {
-        configList.add(new WebInfConfiguration());
-        configList.add(new WebXmlConfiguration());
-        if (useMetaInfoResourceDetect || useTldDetect || useWebFragmentsDetect) {
-            configList.add(new MetaInfConfiguration());
+        configList.add(createWebInfConfiguration());
+        configList.add(createWebXmlConfiguration());
+        if (isValidMetaInfConfiguration()) {
+            configList.add(createMetaInfConfiguration());
         }
-        if (useWebFragmentsDetect) {
-            configList.add(new FragmentConfiguration());
+        if (isValidAnnotationConfiguration()) {
+            configList.add(createAnnotationConfiguration());
         }
-        configList.add(new EnvConfiguration());
-        configList.add(new JettyWebXmlConfiguration());
+        if (isValidFragmentConfiguration()) {
+            configList.add(createFragmentConfiguration());
+        }
+        configList.add(createEnvConfiguration());
+        configList.add(createJettyWebXmlConfiguration());
+    }
+
+    protected WebInfConfiguration createWebInfConfiguration() {
+        return new WebInfConfiguration();
+    }
+
+    protected WebXmlConfiguration createWebXmlConfiguration() {
+        return new WebXmlConfiguration();
+    }
+
+    protected boolean isValidMetaInfConfiguration() {
+        return useMetaInfoResourceDetect || useTldDetect || useWebFragmentsDetect;
+    }
+
+    protected MetaInfConfiguration createMetaInfConfiguration() {
+        return new MetaInfConfiguration() {
+            @Override
+            public void configure(WebAppContext context) throws Exception {
+                context.setAttribute("org.eclipse.jetty.tlds", null); // to use jasper's TldScanner
+                super.configure(context);
+            }
+
+            public void scanForTlds(WebAppContext context, Resource jar, ConcurrentHashMap<Resource, Collection<URL>> cache)
+                    throws Exception {
+                // no scan in Jetty (use jasper's)
+            };
+        };
+    }
+
+    protected boolean isValidAnnotationConfiguration() {
+        return useAnnotationDetect || useTldDetect;
+    }
+
+    protected AnnotationConfiguration createAnnotationConfiguration() {
+        return new AnnotationConfiguration();
+    }
+
+    protected boolean isValidFragmentConfiguration() {
+        return useWebFragmentsDetect;
+    }
+
+    protected FragmentConfiguration createFragmentConfiguration() {
+        return new FragmentConfiguration();
+    }
+
+    protected EnvConfiguration createEnvConfiguration() {
+        return new EnvConfiguration();
+    }
+
+    protected JettyWebXmlConfiguration createJettyWebXmlConfiguration() {
+        return new JettyWebXmlConfiguration();
     }
 
     // ===================================================================================

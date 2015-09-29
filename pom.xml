@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.dbflute.jetty</groupId>
 	<artifactId>jetty-boot</artifactId>
-	<version>0.3.5</version>
+	<version>0.3.6-A-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Jetty Boot</name>
@@ -15,8 +15,7 @@
 	<properties>
 		<servlet.version>3.1.0</servlet.version>
 		<jsp.version>2.3.1</jsp.version>
-		<jetty.version>9.2.13.v20150730</jetty.version>
-		<!-- #next_version <jetty.version>9.3.3.v20150827</jetty.version> -->
+		<jetty.version>9.3.3.v20150827</jetty.version>
 		<utflute.version>0.5.0-sp8</utflute.version>
 	</properties>
 
@@ -189,9 +188,8 @@
 		<dependency> <!-- not contains jetty jsp: is option -->
 			<groupId>org.eclipse.jetty.aggregate</groupId>
 			<artifactId>jetty-all</artifactId>
-			<!-- #next_version <classifier>uber</classifier> -->
+			<classifier>uber</classifier>
 			<version>${jetty.version}</version>
-			<!-- #next_version
 			<exclusions>
 				<exclusion><groupId>org.eclipse.jetty</groupId><artifactId>jetty-client</artifactId></exclusion>
 				<exclusion><groupId>org.eclipse.jetty</groupId><artifactId>jetty-deploy</artifactId></exclusion>
@@ -217,7 +215,6 @@
 				<exclusion><groupId>org.eclipse.jetty.orbit</groupId><artifactId>javax.mail.glassfish</artifactId></exclusion>
 				<exclusion><groupId>org.slf4j</groupId><artifactId>slf4j-api</artifactId></exclusion>
 			</exclusions>
-			 -->
 		</dependency>
 	    <dependency> <!-- needed in various case for e.g. hibernate validator -->
 	        <groupId>org.glassfish</groupId>

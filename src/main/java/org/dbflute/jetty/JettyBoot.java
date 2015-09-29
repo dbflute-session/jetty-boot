@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.eclipse.jetty.annotations.AnnotationConfiguration;
 import org.eclipse.jetty.plus.webapp.EnvConfiguration;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.Configuration;
@@ -106,7 +107,6 @@ public class JettyBoot {
         return this;
     }
 
-    // TODO jflute jettyboot: empty method for now, will implement later (2015/09/28)
     public JettyBoot useAnnotationDetect() {
         useAnnotationDetect = true;
         return this;
@@ -143,7 +143,7 @@ public class JettyBoot {
         }
         prepareServer();
         final URI uri = startServer();
-        info("Boot successful" + (development ? " as development" : "") + ": url -> " + uri);
+        info("Boot successful" + (development ? " as development" : "") + ": url=" + uri);
         if (development) {
             browseOnDesktop(uri);
         }
@@ -216,16 +216,61 @@ public class JettyBoot {
     }
 
     protected void setupConfigList(List<Configuration> configList) {
-        configList.add(new WebInfConfiguration());
-        configList.add(new WebXmlConfiguration());
-        if (useMetaInfoResourceDetect || useTldDetect || useWebFragmentsDetect) {
-            configList.add(new MetaInfConfiguration());
+        configList.add(createWebInfConfiguration());
+        configList.add(createWebXmlConfiguration());
+        if (isValidMetaInfConfiguration()) {
+            configList.add(createMetaInfConfiguration());
         }
-        if (useWebFragmentsDetect) {
-            configList.add(new FragmentConfiguration());
+        if (isValidAnnotationConfiguration()) {
+            configList.add(createAnnotationConfiguration());
         }
-        configList.add(new EnvConfiguration());
-        configList.add(new JettyWebXmlConfiguration());
+        if (isValidFragmentConfiguration()) {
+            configList.add(createFragmentConfiguration());
+        }
+        configList.add(createEnvConfiguration());
+        configList.add(createJettyWebXmlConfiguration());
+    }
+
+    protected WebInfConfiguration createWebInfConfiguration() {
+        return new WebInfConfiguration();
+    }
+
+    protected WebXmlConfiguration createWebXmlConfiguration() {
+        return new WebXmlConfiguration();
+    }
+
+    protected boolean isValidMetaInfConfiguration() {
+        return useMetaInfoResourceDetect || useTldDetect || useWebFragmentsDetect;
+    }
+
+    protected MetaInfConfiguration createMetaInfConfiguration() {
+        return new MetaInfConfiguration();
+    }
+
+    protected boolean isValidAnnotationConfiguration() {
+        // unneede for tld at 9.2
+        //return useAnnotationDetect || useTldDetect;
+        return useAnnotationDetect;
+    }
+
+    protected AnnotationConfiguration createAnnotationConfiguration() {
+        return new AnnotationConfiguration();
+    }
+
+    protected boolean isValidFragmentConfiguration() {
+        return useWebFragmentsDetect;
+    }
+
+    protected FragmentConfiguration createFragmentConfiguration() {
+        return new FragmentConfiguration();
+    }
+
+    protected EnvConfiguration createEnvConfiguration() {
+        return new EnvConfiguration();
+    }
+
+    protected JettyWebXmlConfiguration createJettyWebXmlConfiguration() {
+        return new JettyWebXmlConfiguration();
     }
 
     // ===================================================================================

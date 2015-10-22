@@ -53,8 +53,15 @@ public class JettyBoot {
     // ===================================================================================
     //                                                                           Attribute
     //                                                                           =========
+    // -----------------------------------------------------
+    //                                                 Basic
+    //                                                 -----
     protected final int port;
     protected final String contextPath;
+
+    // -----------------------------------------------------
+    //                                                Option
+    //                                                ------
     protected boolean development;
     protected boolean browseOnDesktop;
     protected boolean suppressShutdownHook;
@@ -64,6 +71,9 @@ public class JettyBoot {
     protected boolean useTldDetect;
     protected boolean useWebFragmentsDetect;
 
+    // -----------------------------------------------------
+    //                                              Stateful
+    //                                              --------
     protected Server server;
 
     // ===================================================================================
@@ -131,12 +141,15 @@ public class JettyBoot {
     //                                                                               Boot
     //                                                                              ======
     public JettyBoot bootAwait() {
-        startBoot();
+        go();
         await();
         return this;
     }
 
-    public JettyBoot startBoot() { // no wait
+    // -----------------------------------------------------
+    //                                                  Go
+    //                                                ------
+    public JettyBoot go() { // public as parts, no wait
         info("...Booting the Jetty: port=" + port + " contextPath=" + contextPath);
         if (development) {
             registerShutdownHook();
@@ -273,6 +286,20 @@ public class JettyBoot {
         return new JettyWebXmlConfiguration();
     }
 
+    // -----------------------------------------------------
+    //                                                 Await
+    //                                                 -----
+    public void await() { // public as parts
+        if (server == null) {
+            throw new IllegalStateException("server has not been started.");
+        }
+        try {
+            server.join();
+        } catch (Exception e) {
+            throw new IllegalStateException("server join failed.", e);
+        }
+    }
+
     // ===================================================================================
     //                                                                         Development
     //                                                                         ===========
@@ -354,20 +381,6 @@ public class JettyBoot {
             desktop.browse(uri);
         } catch (IOException e) {
             throw new IllegalStateException("Failed to browse the URI: " + uri, e);
-        }
-    }
-
-    // ===================================================================================
-    //                                                                               Await
-    //                                                                               =====
-    public void await() {
-        if (server == null) {
-            throw new IllegalStateException("server has not been started.");
-        }
-        try {
-            server.join();
-        } catch (Exception e) {
-            throw new IllegalStateException("server join failed.", e);
         }
     }
 

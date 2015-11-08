@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.eclipse.jetty.annotations.AnnotationConfiguration;
 import org.eclipse.jetty.plus.webapp.EnvConfiguration;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.Configuration;
@@ -52,8 +53,15 @@ public class JettyBoot {
     // ===================================================================================
     //                                                                           Attribute
     //                                                                           =========
+    // -----------------------------------------------------
+    //                                                 Basic
+    //                                                 -----
     protected final int port;
     protected final String contextPath;
+
+    // -----------------------------------------------------
+    //                                                Option
+    //                                                ------
     protected boolean development;
     protected boolean browseOnDesktop;
     protected boolean suppressShutdownHook;
@@ -63,6 +71,9 @@ public class JettyBoot {
     protected boolean useTldDetect;
     protected boolean useWebFragmentsDetect;
 
+    // -----------------------------------------------------
+    //                                              Stateful
+    //                                              --------
     protected Server server;
 
     // ===================================================================================
@@ -106,7 +117,6 @@ public class JettyBoot {
         return this;
     }
 
-    // TODO jflute jettyboot: empty method for now, will implement later (2015/09/28)
     public JettyBoot useAnnotationDetect() {
         useAnnotationDetect = true;
         return this;
@@ -131,12 +141,15 @@ public class JettyBoot {
     //                                                                               Boot
     //                                                                              ======
     public JettyBoot bootAwait() {
-        startBoot();
+        go();
         await();
         return this;
     }
 
-    public JettyBoot startBoot() { // no wait
+    // -----------------------------------------------------
+    //                                                  Go
+    //                                                ------
+    public JettyBoot go() { // public as parts, no wait
         info("...Booting the Jetty: port=" + port + " contextPath=" + contextPath);
         if (development) {
             registerShutdownHook();
@@ -216,16 +229,75 @@ public class JettyBoot {
     }
 
     protected void setupConfigList(List<Configuration> configList) {
-        configList.add(new WebInfConfiguration());
-        configList.add(new WebXmlConfiguration());
-        if (useMetaInfoResourceDetect || useTldDetect || useWebFragmentsDetect) {
-            configList.add(new MetaInfConfiguration());
+        configList.add(createWebInfConfiguration());
+        configList.add(createWebXmlConfiguration());
+        if (isValidMetaInfConfiguration()) {
+            configList.add(createMetaInfConfiguration());
         }
-        if (useWebFragmentsDetect) {
-            configList.add(new FragmentConfiguration());
+        if (isValidAnnotationConfiguration()) {
+            configList.add(createAnnotationConfiguration());
         }
-        configList.add(new EnvConfiguration());
-        configList.add(new JettyWebXmlConfiguration());
+        if (isValidFragmentConfiguration()) {
+            configList.add(createFragmentConfiguration());
+        }
+        configList.add(createEnvConfiguration());
+        configList.add(createJettyWebXmlConfiguration());
+    }
+
+    protected WebInfConfiguration createWebInfConfiguration() {
+        return new WebInfConfiguration();
+    }
+
+    protected WebXmlConfiguration createWebXmlConfiguration() {
+        return new WebXmlConfiguration();
+    }
+
+    protected boolean isValidMetaInfConfiguration() {
+        return useMetaInfoResourceDetect || useTldDetect || useWebFragmentsDetect;
+    }
+
+    protected MetaInfConfiguration createMetaInfConfiguration() {
+        return new MetaInfConfiguration();
+    }
+
+    protected boolean isValidAnnotationConfiguration() {
+        // unneede for tld at 9.2
+        //return useAnnotationDetect || useTldDetect;
+        return useAnnotationDetect;
+    }
+
+    protected AnnotationConfiguration createAnnotationConfiguration() {
+        return new AnnotationConfiguration();
+    }
+
+    protected boolean isValidFragmentConfiguration() {
+        return useWebFragmentsDetect;
+    }
+
+    protected FragmentConfiguration createFragmentConfiguration() {
+        return new FragmentConfiguration();
+    }
+
+    protected EnvConfiguration createEnvConfiguration() {
+        return new EnvConfiguration();
+    }
+
+    protected JettyWebXmlConfiguration createJettyWebXmlConfiguration() {
+        return new JettyWebXmlConfiguration();
+    }
+
+    // -----------------------------------------------------
+    //                                                 Await
+    //                                                 -----
+    public void await() { // public as parts
+        if (server == null) {
+            throw new IllegalStateException("server has not been started.");
+        }
+        try {
+            server.join();
+        } catch (Exception e) {
+            throw new IllegalStateException("server join failed.", e);
+        }
     }
 
     // ===================================================================================
@@ -309,20 +381,6 @@ public class JettyBoot {
             desktop.browse(uri);
         } catch (IOException e) {
             throw new IllegalStateException("Failed to browse the URI: " + uri, e);
-        }
-    }
-
-    // ===================================================================================
-    //                                                                               Await
-    //                                                                               =====
-    public void await() {
-        if (server == null) {
-            throw new IllegalStateException("server has not been started.");
-        }
-        try {
-            server.join();
-        } catch (Exception e) {
-            throw new IllegalStateException("server join failed.", e);
         }
     }
 

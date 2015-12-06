@@ -25,7 +25,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.dbflute.jetty.util.BoJtResourceUtil;
 import org.eclipse.jetty.annotations.AnnotationConfiguration;
 import org.eclipse.jetty.plus.webapp.EnvConfiguration;
 import org.eclipse.jetty.server.Server;
@@ -46,7 +49,6 @@ public class JettyBoot {
     // ===================================================================================
     //                                                                          Definition
     //                                                                          ==========
-    protected static final String MAVEN_CONVENTION_WEBAPP = "./src/main/webapp/";
     protected static final String WEBROOT_RESOURCE_PATH = "/webroot/";
     protected static final String DEFAULT_MARK_DIR = "/tmp/dbflute/jettyboot"; // for shutdown hook
 
@@ -201,10 +203,16 @@ public class JettyBoot {
         return context;
     }
 
+    // -----------------------------------------------------
+    //                                          War Location
+    //                                          ------------
     protected URL getWarLocation() {
         return JettyBoot.class.getProtectionDomain().getCodeSource().getLocation();
     }
 
+    // -----------------------------------------------------
+    //                                         Resource Base
+    //                                         -------------
     protected String getResourceBase() {
         if (useEmbeddedWebroot) { // option
             final String path = WEBROOT_RESOURCE_PATH;
@@ -218,10 +226,89 @@ public class JettyBoot {
                 throw new IllegalStateException("Illegal URL: " + webroot, e);
             }
         } else { // default is here
-            return MAVEN_CONVENTION_WEBAPP;
+            return deriveWebappDir().getPath();
         }
     }
 
+    protected File deriveWebappDir() {
+        final String webappRelativePath = getBasicWebappRelativePath();
+        final File webappDir = new File(webappRelativePath);
+        if (webappDir.exists()) { // from current directory
+            return webappDir;
+        }
+        final File projectWebappDir = findProjectWebappDir(webappRelativePath); // from build path
+        if (projectWebappDir != null) {
+            return projectWebappDir;
+        }
+        throw new IllegalStateException("Not found the webapp directory: " + webappDir);
+    }
+
+    protected String getBasicWebappRelativePath() {
+        return "./src/main/webapp";
+    }
+
+    protected File findProjectWebappDir(String webappRelativePath) {
+        info("...Finding project webapp from stack trace: webappRelativePath=" + webappRelativePath);
+        final StackTraceElement[] stackTrace = new RuntimeException().getStackTrace();
+        if (stackTrace == null || stackTrace.length == 0) { // just in case
+            info("*Not found the stack trace: " + stackTrace);
+            return null;
+        }
+        // IntelliJ calls from own main() so find nearest main()
+        StackTraceElement rootElement = null;
+        for (int i = 0; i < stackTrace.length; i++) {
+            final StackTraceElement element = stackTrace[i];
+            if ("main".equals(element.getMethodName())) {
+                rootElement = element;
+                break;
+            }
+        }
+        if (rootElement == null) { // just in case
+            info("*Not found the main method: " + Stream.of(stackTrace).map(el -> {
+                return el.getMethodName();
+            }).collect(Collectors.joining(",")));
+            return null;
+        }
+        final String className = rootElement.getClassName(); // e.g. DocksideBoot
+        final Class<?> clazz;
+        try {
+            clazz = Class.forName(className);
+        } catch (ClassNotFoundException continued) {
+            info("*Not found the class: " + className + " :: " + continued.getMessage());
+            return null;
+        }
+        final File buildDir = BoJtResourceUtil.getBuildDir(clazz); // target/classes
+        final File targetDir = buildDir.getParentFile(); // target
+        if (targetDir == null) { // just in case
+            info("*Not found the target directory: buildDir=" + buildDir);
+            return null;
+        }
+        final File projectDir = targetDir.getParentFile(); // e.g. maihama-dockside
+        if (projectDir == null) { // just in case
+            info("*Not found the project directory: targetDir=" + targetDir);
+            return null;
+        }
+        final String projectPath;
+        try {
+            projectPath = projectDir.getCanonicalPath().replace("\\", "/");
+        } catch (IOException continued) {
+            info("*Cannot get canonical path from: " + projectDir + " :: " + continued.getMessage());
+            return null;
+        }
+        final String projectWebappPath = projectPath + "/" + webappRelativePath;
+        final File projectWebappDir = new File(projectWebappPath);
+        if (projectWebappDir.exists()) {
+            info("OK, found the project webapp: " + projectWebappPath);
+            return projectWebappDir;
+        } else {
+            info("*Not found the project webapp by derived path: " + projectWebappPath);
+            return null;
+        }
+    }
+
+    // -----------------------------------------------------
+    //                                        Configurations
+    //                                        --------------
     protected Configuration[] prepareConfigurations() {
         final List<Configuration> configList = new ArrayList<Configuration>();
         setupConfigList(configList);

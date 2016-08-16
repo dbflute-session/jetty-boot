@@ -37,14 +37,17 @@ public class HarborBoot {
 ```
 
 # Information
-## Maven Dependency in pom.xml
+## Maven Dependency
 ```xml
 <dependency>
     <groupId>org.dbflute.jetty</groupId>
     <artifactId>jetty-boot</artifactId>
-    <version>0.4.2</version>
+    <version>0.4.3</version>
 </dependency>
 ```
+
+## if you use JSP
+...use TomcatBoot with Jasper: https://github.com/dbflute-session/tomcat-boot
 
 ## License
 Apache License 2.0

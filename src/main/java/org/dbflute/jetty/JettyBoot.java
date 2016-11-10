@@ -97,7 +97,8 @@ public class JettyBoot {
     }
 
     public JettyBoot browseOnDesktop() {
-        assertDevelopmentState();
+        // wants to use this in production (e.g. DBFlute Intro) 
+        //assertDevelopmentState();
         browseOnDesktop = true;
         return this;
     }

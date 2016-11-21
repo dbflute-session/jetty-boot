@@ -160,7 +160,7 @@ public class JettyBoot {
         prepareServer();
         final URI uri = startServer();
         info("Boot successful" + (development ? " as development" : "") + ": url -> " + uri);
-        browseOnDesktop(uri);
+        browseOnDesktopIfNeeds(uri);
         return this;
     }
 
@@ -458,7 +458,7 @@ public class JettyBoot {
     // -----------------------------------------------------
     //                                                Browse
     //                                                ------
-    protected void browseOnDesktop(final URI uri) {
+    protected void browseOnDesktopIfNeeds(final URI uri) {
         if (!browseOnDesktop) {
             return;
         }

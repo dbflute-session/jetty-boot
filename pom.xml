@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.dbflute.jetty</groupId>
 	<artifactId>jetty-boot</artifactId>
-	<version>0.4.4</version>
+	<version>0.4.5-RC1</version>
 	<packaging>jar</packaging>
 
 	<name>Jetty Boot</name>
@@ -15,7 +15,7 @@
 	<properties>
 		<servlet.version>3.1.0</servlet.version>
 		<jetty.version>9.3.13.v20161014</jetty.version>
-		<utflute.version>0.6.1C</utflute.version>
+		<utflute.version>0.6.2</utflute.version>
 	</properties>
 
 	<licenses>

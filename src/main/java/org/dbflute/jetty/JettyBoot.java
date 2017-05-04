@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.dbflute.jetty.util.BoJtResourceUtil;
+import org.dbflute.util.Srl;
 import org.eclipse.jetty.annotations.AnnotationConfiguration;
 import org.eclipse.jetty.plus.webapp.EnvConfiguration;
 import org.eclipse.jetty.server.Server;
@@ -206,11 +207,23 @@ public class JettyBoot {
     //                                          War Handling
     //                                          ------------
     protected URL getWarLocation() {
+        // e.g.
+        // /.../maihama-dockside.war in production (executable jar)
+        // /.../dbflute-intro.jar in production (executable jar)
+        // /.../jetty-boot-x.x.x.jar in local development
         return JettyBoot.class.getProtectionDomain().getCodeSource().getLocation();
     }
 
     protected boolean isWarableFile(String path) {
-        return path.endsWith(".war") || path.endsWith(".jar"); // also .jar for .e.g. DBFlute Intro
+        if (path.endsWith(".war")) { // e.g. /.../maihama-dockside.war
+            return true;
+        }
+        // is it war-able jar file? (.e.g. DBFlute Intro)
+        // pureName is e.g.
+        //  o dbflute-intro.jar in production (executable jar)
+        //  o jetty-boot-x.x.x.jar in local development (cannot be war-able)
+        final String pureName = Srl.substringLastRear(path, "/"); // jetty-boot-x.x.x.jar if local
+        return !pureName.startsWith("jetty-boot") && pureName.endsWith(".jar");
     }
 
     // -----------------------------------------------------

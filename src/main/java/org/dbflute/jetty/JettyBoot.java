@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.dbflute.jetty.util.BoJtResourceUtil;
-import org.dbflute.util.Srl;
 import org.eclipse.jetty.annotations.AnnotationConfiguration;
 import org.eclipse.jetty.plus.webapp.EnvConfiguration;
 import org.eclipse.jetty.server.Server;
@@ -222,7 +221,13 @@ public class JettyBoot {
         // pureName is e.g.
         //  o dbflute-intro.jar in production (executable jar)
         //  o jetty-boot-x.x.x.jar in local development (cannot be war-able)
-        final String pureName = Srl.substringLastRear(path, "/"); // jetty-boot-x.x.x.jar if local
+        final String delimiter = "/";
+        final String pureName;
+        if (path.contains(delimiter)) {
+            pureName = path.substring(path.indexOf(delimiter) + delimiter.length());
+        } else {
+            pureName = path;
+        }
         return !pureName.startsWith("jetty-boot") && pureName.endsWith(".jar");
     }
 

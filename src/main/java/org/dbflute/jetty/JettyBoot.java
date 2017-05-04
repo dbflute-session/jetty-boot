@@ -192,7 +192,7 @@ public class JettyBoot {
             throw new IllegalStateException("server start failed.", e);
         }
         final WebAppContext context = new WebAppContext();
-        if (path != null && path.endsWith(".war")) {
+        if (path != null && isWarableFile(path)) {
             context.setWar(warLocation.toExternalForm());
         } else {
             context.setResourceBase(getResourceBase());
@@ -203,10 +203,14 @@ public class JettyBoot {
     }
 
     // -----------------------------------------------------
-    //                                          War Location
+    //                                          War Handling
     //                                          ------------
     protected URL getWarLocation() {
         return JettyBoot.class.getProtectionDomain().getCodeSource().getLocation();
+    }
+
+    protected boolean isWarableFile(String path) {
+        return path.endsWith(".war") || path.endsWith(".jar"); // also .jar for .e.g. DBFlute Intro
     }
 
     // -----------------------------------------------------

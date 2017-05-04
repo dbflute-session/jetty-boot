@@ -209,7 +209,8 @@ public class JettyBoot {
         // e.g.
         // /.../maihama-dockside.war in production (executable jar)
         // /.../dbflute-intro.jar in production (executable jar)
-        // /.../jetty-boot-x.x.x.jar in local development
+        // /.../jetty-boot-x.x.x.jar in local development by library reference
+        // /.../jetty-boot/target/classes/ in local development by project reference
         return JettyBoot.class.getProtectionDomain().getCodeSource().getLocation();
     }
 
@@ -217,14 +218,15 @@ public class JettyBoot {
         if (path.endsWith(".war")) { // e.g. /.../maihama-dockside.war
             return true;
         }
-        // is it war-able jar file? (.e.g. DBFlute Intro)
+        // is it war-able jar file? (e.g. DBFlute Intro)
         // pureName is e.g.
         //  o dbflute-intro.jar in production (executable jar)
-        //  o jetty-boot-x.x.x.jar in local development (cannot be war-able)
+        //  o jetty-boot-x.x.x.jar in local development by library reference (cannot be war-able)
+        //  o (empty string) in local development by project reference (cannot be war-able)
         final String delimiter = "/";
         final String pureName;
         if (path.contains(delimiter)) {
-            pureName = path.substring(path.indexOf(delimiter) + delimiter.length());
+            pureName = path.substring(path.lastIndexOf(delimiter) + delimiter.length());
         } else {
             pureName = path;
         }

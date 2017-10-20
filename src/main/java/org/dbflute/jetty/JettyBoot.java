@@ -522,6 +522,9 @@ public class JettyBoot {
     // -----------------------------------------------------
     //                                         Classpath Jar
     //                                         -------------
+    // cannot use web-fragment and meta-inf as default
+    // because jetty does not see classpath jar resources
+    // so manually enable it
     protected void setupClasspathJarResourceIfNeeds(WebAppContext context) {
         if (isWarableWorld() || !isValidMetaInfConfiguration()) {
             return;

@@ -42,7 +42,7 @@ public class HarborBoot {
 <dependency>
     <groupId>org.dbflute.jetty</groupId>
     <artifactId>jetty-boot</artifactId>
-    <version>0.4.8</version>
+    <version>0.4.9</version>
 </dependency>
 ```
 

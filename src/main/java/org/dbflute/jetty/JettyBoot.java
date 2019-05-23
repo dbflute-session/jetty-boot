@@ -50,6 +50,7 @@ import org.eclipse.jetty.webapp.WebXmlConfiguration;
 /**
  * @author p1us2er0
  * @author jflute
+ * @author cabos
  */
 public class JettyBoot {
 
@@ -236,19 +237,35 @@ public class JettyBoot {
         }
         prepareServer();
         final URI uri = startServer();
-        info("Boot successful" + (development ? " as development" : "") + ": url -> " + uri);
+        loggingBootSuccessful(uri);
         browseOnDesktopIfNeeds(uri);
         return this;
     }
 
+    private void loggingBootSuccessful(URI uri) {
+        final String serverHost = getServerHost();
+        if (serverHost != null) {
+            info("Boot successful" + (development ? " as development" : "") + ": url -> " + uri);
+        } else {
+            final String uriHost = uri.getHost();
+            final String loggingUri = uri.toString().replace(uriHost, "localhost");
+            info("Boot successful" + (development ? " as development" : "") + ": url -> " + loggingUri);
+        }
+    }
+
     protected void prepareServer() {
         final WebAppContext context = prepareWebAppContext();
-        server = new Server(new InetSocketAddress(getServerHost(), port));
+        final String serverHost = getServerHost();
+        if (serverHost != null) {
+            server = new Server(new InetSocketAddress(serverHost, port));
+        } else {
+            server = new Server(port);
+        }
         server.setHandler(context);
     }
 
-    protected String getServerHost() {
-        return "localhost";
+    protected String getServerHost() { // may be overridden
+        return null; // as default, all acceptable
     }
 
     protected URI startServer() {

@@ -242,24 +242,13 @@ public class JettyBoot {
         return this;
     }
 
-    private void loggingBootSuccessful(URI uri) {
-        final String serverHost = getServerHost();
-        if (serverHost != null) {
-            info("Boot successful" + (development ? " as development" : "") + ": url -> " + uri);
-        } else {
-            final String uriHost = uri.getHost();
-            final String loggingUri = uri.toString().replace(uriHost, "localhost");
-            info("Boot successful" + (development ? " as development" : "") + ": url -> " + loggingUri);
-        }
-    }
-
     protected void prepareServer() {
         final WebAppContext context = prepareWebAppContext();
         final String serverHost = getServerHost();
         if (serverHost != null) {
             server = new Server(new InetSocketAddress(serverHost, port));
         } else {
-            server = new Server(port);
+            server = new Server(port); // network connector binds to all network interfaces. (all access accept)
         }
         server.setHandler(context);
     }
@@ -276,6 +265,22 @@ public class JettyBoot {
         }
         return server.getURI();
     }
+
+    protected void loggingBootSuccessful(URI uri) {
+        info(buildBootSuccessfulLogMessage(uri));
+    }
+
+    protected String buildBootSuccessfulLogMessage(URI uri) {
+        final String serverHost = getServerHost();
+        if (serverHost != null) {
+            return "Boot successful" + (development ? " as development" : "") + ": url -> " + uri;
+        } else {
+            final String uriHost = uri.getHost(); // may be your Wifi's IP address
+            final String loggingUri = uri.toString().replace(uriHost, "localhost"); // so switch as default
+            return "Boot successful" + (development ? " as development" : "") + ": url -> " + loggingUri;
+        }
+    }
+
 
     protected WebAppContext prepareWebAppContext() {
         final URL warLocation = getWarLocation();

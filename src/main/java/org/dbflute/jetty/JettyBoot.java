@@ -50,6 +50,7 @@ import org.eclipse.jetty.webapp.WebXmlConfiguration;
 /**
  * @author p1us2er0
  * @author jflute
+ * @author cabos
  */
 public class JettyBoot {
 
@@ -236,19 +237,24 @@ public class JettyBoot {
         }
         prepareServer();
         final URI uri = startServer();
-        info("Boot successful" + (development ? " as development" : "") + ": url -> " + uri);
+        loggingBootSuccessful(uri);
         browseOnDesktopIfNeeds(uri);
         return this;
     }
 
     protected void prepareServer() {
         final WebAppContext context = prepareWebAppContext();
-        server = new Server(new InetSocketAddress(getServerHost(), port));
+        final String serverHost = getServerHost();
+        if (serverHost != null) {
+            server = new Server(new InetSocketAddress(serverHost, port));
+        } else { // means network connector binds to all network interfaces.
+            server = new Server(port); // all requests are accepted regardless server host
+        }
         server.setHandler(context);
     }
 
-    protected String getServerHost() {
-        return "localhost";
+    protected String getServerHost() { // may be overridden
+        return null; // as default, all acceptable
     }
 
     protected URI startServer() {
@@ -258,6 +264,25 @@ public class JettyBoot {
             throw new IllegalStateException("server start failed.", e);
         }
         return server.getURI();
+    }
+
+    protected void loggingBootSuccessful(URI uri) {
+        info(buildBootSuccessfulLogMessage(uri));
+    }
+
+    protected String buildBootSuccessfulLogMessage(URI uri) {
+        final String serverHost = getServerHost();
+        if (serverHost != null) {
+            return doBuildBootSuccessfulLogMessage(uri.toString());
+        } else { // means all hosts in URL are acceptable
+            final String uriHost = uri.getHost(); // may be your Wifi's IP address
+            final String loggingUri = uri.toString().replace(uriHost, "localhost"); // so switch as default
+            return doBuildBootSuccessfulLogMessage(loggingUri);
+        }
+    }
+
+    protected String doBuildBootSuccessfulLogMessage(String uri) {
+        return "Boot successful" + (development ? " as development" : "") + ": url -> " + uri;
     }
 
     protected WebAppContext prepareWebAppContext() {

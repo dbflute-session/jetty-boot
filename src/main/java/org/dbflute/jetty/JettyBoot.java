@@ -273,14 +273,17 @@ public class JettyBoot {
     protected String buildBootSuccessfulLogMessage(URI uri) {
         final String serverHost = getServerHost();
         if (serverHost != null) {
-            return "Boot successful" + (development ? " as development" : "") + ": url -> " + uri;
+            return doBuildBootSuccessfulLogMessage(uri.toString());
         } else { // means all hosts in URL are acceptable
             final String uriHost = uri.getHost(); // may be your Wifi's IP address
             final String loggingUri = uri.toString().replace(uriHost, "localhost"); // so switch as default
-            return "Boot successful" + (development ? " as development" : "") + ": url -> " + loggingUri;
+            return doBuildBootSuccessfulLogMessage(loggingUri);
         }
     }
 
+    protected String doBuildBootSuccessfulLogMessage(String uri) {
+        return "Boot successful" + (development ? " as development" : "") + ": url -> " + uri;
+    }
 
     protected WebAppContext prepareWebAppContext() {
         final URL warLocation = getWarLocation();

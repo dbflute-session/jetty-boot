@@ -247,8 +247,8 @@ public class JettyBoot {
         final String serverHost = getServerHost();
         if (serverHost != null) {
             server = new Server(new InetSocketAddress(serverHost, port));
-        } else {
-            server = new Server(port); // network connector binds to all network interfaces. (all access accept)
+        } else { // means network connector binds to all network interfaces.
+            server = new Server(port); // all requests are accepted regardless server host
         }
         server.setHandler(context);
     }
@@ -274,7 +274,7 @@ public class JettyBoot {
         final String serverHost = getServerHost();
         if (serverHost != null) {
             return "Boot successful" + (development ? " as development" : "") + ": url -> " + uri;
-        } else {
+        } else { // means all hosts in URL are acceptable
             final String uriHost = uri.getHost(); // may be your Wifi's IP address
             final String loggingUri = uri.toString().replace(uriHost, "localhost"); // so switch as default
             return "Boot successful" + (development ? " as development" : "") + ": url -> " + loggingUri;

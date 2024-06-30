@@ -688,7 +688,7 @@ public class JettyBoot {
     }
 
     protected long getShuwdownHookWaitMillis() {
-        return 2000L;
+        return 300L; // short because of early boot on Java21
     }
 
     // -----------------------------------------------------

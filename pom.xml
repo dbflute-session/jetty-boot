@@ -15,7 +15,7 @@
 	<properties>
 		<servlet.version>3.1.0</servlet.version>
 		<jetty.version>9.4.42.v20210604</jetty.version>
-		<utflute.version>0.9.3</utflute.version>
+		<utflute.version>0.9.6</utflute.version>
 	</properties>
 
 	<licenses>

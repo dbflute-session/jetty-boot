@@ -26,6 +26,8 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.JarURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
@@ -114,12 +116,13 @@ public class BoJtResourceUtil { // same as DfResourceUtil
 
     public static URL createURL(String spec) {
         try {
-            return new URL(spec);
-        } catch (IOException e) {
+            return new URI(spec).toURL(); // #jakarta
+        } catch (URISyntaxException | IOException e) {
             throw new IllegalStateException(e);
         }
     }
 
+    @SuppressWarnings("deprecation") // #jakarta don't know how to create URI by context
     public static URL create(URL context, String spec) {
         try {
             return new URL(context, spec);

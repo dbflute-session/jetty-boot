@@ -18,7 +18,6 @@ package org.dbflute.jetty;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -34,18 +33,18 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.dbflute.jetty.util.BoJtResourceUtil;
-import org.eclipse.jetty.annotations.AnnotationConfiguration;
-import org.eclipse.jetty.plus.webapp.EnvConfiguration;
+import org.eclipse.jetty.ee10.annotations.AnnotationConfiguration;
+import org.eclipse.jetty.ee10.plus.webapp.EnvConfiguration;
+import org.eclipse.jetty.ee10.webapp.Configuration;
+import org.eclipse.jetty.ee10.webapp.FragmentConfiguration;
+import org.eclipse.jetty.ee10.webapp.JettyWebXmlConfiguration;
+import org.eclipse.jetty.ee10.webapp.MetaInfConfiguration;
+import org.eclipse.jetty.ee10.webapp.WebAppContext;
+import org.eclipse.jetty.ee10.webapp.WebInfConfiguration;
+import org.eclipse.jetty.ee10.webapp.WebXmlConfiguration;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.util.resource.JarResource;
 import org.eclipse.jetty.util.resource.Resource;
-import org.eclipse.jetty.webapp.Configuration;
-import org.eclipse.jetty.webapp.FragmentConfiguration;
-import org.eclipse.jetty.webapp.JettyWebXmlConfiguration;
-import org.eclipse.jetty.webapp.MetaInfConfiguration;
-import org.eclipse.jetty.webapp.WebAppContext;
-import org.eclipse.jetty.webapp.WebInfConfiguration;
-import org.eclipse.jetty.webapp.WebXmlConfiguration;
+import org.eclipse.jetty.util.resource.URLResourceFactory;
 
 /**
  * @author p1us2er0
@@ -297,7 +296,7 @@ public class JettyBoot {
         if (path != null && isWarableFile(path)) {
             context.setWar(warLocation.toExternalForm());
         } else {
-            context.setResourceBase(getResourceBase());
+            context.setBaseResourceAsString(getResourceBase()); // #jakarta
         }
         context.setConfigurations(prepareConfigurations());
         context.setContextPath(contextPath);
@@ -491,18 +490,18 @@ public class JettyBoot {
         }
 
         @Override
-        public void scanForResources(WebAppContext context, Resource target, ConcurrentHashMap<Resource, Resource> cache) throws Exception {
+        public void scanForResources(WebAppContext context, Resource dir, ConcurrentHashMap<Resource, Resource> cache) { // #jakarta
             if (useMetaInfoResourceDetect) {
-                if (isTargetWebFragment(target)) { // depends on web-fragment detect (to be same specification as tomcat)
-                    super.scanForResources(context, target, cache);
+                if (isTargetWebFragment(dir)) { // depends on web-fragment detect (to be same specification as tomcat)
+                    super.scanForResources(context, dir, cache);
                 }
             }
         }
 
         @Override
-        public void scanForFragment(WebAppContext context, Resource jar, ConcurrentHashMap<Resource, Resource> cache) throws Exception {
-            if (useWebFragmentsDetect && isTargetWebFragment(jar)) {
-                super.scanForFragment(context, jar, cache);
+        public void scanForFragment(WebAppContext context, Resource dir, ConcurrentHashMap<Resource, Resource> cache) { // #jakarta
+            if (useWebFragmentsDetect && isTargetWebFragment(dir)) {
+                super.scanForFragment(context, dir, cache);
             }
         }
 
@@ -558,14 +557,8 @@ public class JettyBoot {
         final List<String> classpathList = extractJarClassspathList();
         for (String classpath : classpathList) {
             final String jarPath = convertClasspathToJarPath(classpath);
-            final URL url;
-            try {
-                url = new URL(jarPath);
-            } catch (MalformedURLException e) {
-                throw new IllegalStateException("Failed to create URL from the jar path: " + jarPath, e);
-            }
-            context.getMetaData().addContainerResource(new JarResource(url) {
-            });
+            final Resource jarResource = prepareJarResource(jarPath);
+            context.getMetaData().addContainerResource(jarResource); // #jakarta
         }
     }
 
@@ -606,6 +599,17 @@ public class JettyBoot {
 
     protected String convertClasspathToJarPath(String classpath) {
         return "jar:file:" + classpath + "!/";
+    }
+
+    protected Resource prepareJarResource(String jarPath) { // #jakarta
+        final URI uri;
+        try {
+            uri = new URI(jarPath); // #jakarta
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException("Failed to create URL from the jar path: " + jarPath, e);
+        }
+        final URLResourceFactory resourceFactory = new URLResourceFactory();
+        return resourceFactory.newJarFileResource(uri);
     }
 
     // -----------------------------------------------------

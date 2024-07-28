@@ -13,8 +13,8 @@
 	<inceptionYear>2015</inceptionYear>
 
 	<properties>
-		<servlet.version>3.1.0</servlet.version>
-		<jetty.version>9.4.55.v20240627</jetty.version>
+		<servlet.version>6.0.0</servlet.version>
+		<jetty.version>12.0.11</jetty.version>
 		<utflute.version>0.9.6</utflute.version>
 	</properties>
 
@@ -172,55 +172,57 @@
 		</plugins>
 	</build>
 
+	<repositories>
+		<repository>
+			<id>sonatype-oss-public</id>
+			<url>https://oss.sonatype.org/content/groups/public/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
 	<dependencies>
 		<!-- = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = -->
 		<!--                                                                Main Framework -->
 		<!--                                                                 = = = = = = = -->
 		<!-- servlet -->
 		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
 			<version>${servlet.version}</version>
 			<scope>provided</scope>
 		</dependency>
 
         <!-- jetty -->
-		<dependency> <!-- not contains jetty jsp: is option -->
-			<groupId>org.eclipse.jetty.aggregate</groupId>
-			<artifactId>jetty-all</artifactId>
-			<classifier>uber</classifier>
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-server</artifactId>
 			<version>${jetty.version}</version>
-			<exclusions>
-				<exclusion><groupId>org.eclipse.jetty</groupId><artifactId>jetty-client</artifactId></exclusion>
-				<exclusion><groupId>org.eclipse.jetty</groupId><artifactId>jetty-deploy</artifactId></exclusion>
-				<exclusion><groupId>org.eclipse.jetty</groupId><artifactId>jetty-jmx</artifactId></exclusion>
-				<exclusion><groupId>org.eclipse.jetty</groupId><artifactId>jetty-plus</artifactId></exclusion>
-				<exclusion><groupId>org.eclipse.jetty</groupId><artifactId>jetty-xml</artifactId></exclusion>
-				<exclusion><groupId>org.eclipse.jetty</groupId><artifactId>jetty-annotations</artifactId></exclusion>
-				<exclusion><groupId>org.eclipse.jetty</groupId><artifactId>jetty-util</artifactId></exclusion>
-				<exclusion><groupId>org.eclipse.jetty</groupId><artifactId>jetty-jaspi</artifactId></exclusion>
-				<exclusion><groupId>org.eclipse.jetty</groupId><artifactId>jetty-jndi</artifactId></exclusion>
-				<exclusion><groupId>org.eclipse.jetty</groupId><artifactId>jetty-rewrite</artifactId></exclusion>
-				<exclusion><groupId>org.eclipse.jetty</groupId><artifactId>jetty-servlets</artifactId></exclusion>
-				<exclusion><groupId>org.eclipse.jetty</groupId><artifactId>jetty-quickstart</artifactId></exclusion>
-				<exclusion><groupId>org.eclipse.jetty.websocket</groupId><artifactId>websocket-servlet</artifactId></exclusion>
-				<exclusion><groupId>org.eclipse.jetty.websocket</groupId><artifactId>javax-websocket-server-impl</artifactId></exclusion>
-				<exclusion><groupId>org.eclipse.jetty.websocket</groupId><artifactId>websocket-client</artifactId></exclusion>
-				<exclusion><groupId>org.eclipse.jetty</groupId><artifactId>jetty-alpn-client</artifactId></exclusion>
-				<exclusion><groupId>org.eclipse.jetty.http2</groupId><artifactId>http2-server</artifactId></exclusion>
-				<exclusion><groupId>org.eclipse.jetty.http2</groupId><artifactId>http2-client</artifactId></exclusion>
-				<exclusion><groupId>javax.websocket</groupId><artifactId>javax.websocket-api</artifactId></exclusion>
-				<exclusion><groupId>javax.servlet</groupId><artifactId>javax.servlet-api</artifactId></exclusion>
-				<exclusion><groupId>javax.transaction</groupId><artifactId>javax.transaction-api</artifactId></exclusion>
-				<exclusion><groupId>org.eclipse.jetty.orbit</groupId><artifactId>javax.mail.glassfish</artifactId></exclusion>
-				<exclusion><groupId>org.slf4j</groupId><artifactId>slf4j-api</artifactId></exclusion>
-			</exclusions>
 		</dependency>
-	    <dependency> <!-- needed in various case for e.g. hibernate validator -->
-	        <groupId>org.glassfish</groupId>
-	        <artifactId>javax.el</artifactId>
-			<version>3.0.0</version>
-	    </dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty.ee10</groupId>
+			<artifactId>jetty-ee10-servlet</artifactId>
+			<version>${jetty.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty.ee10</groupId>
+			<artifactId>jetty-ee10-webapp</artifactId>
+			<version>${jetty.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty.ee10</groupId>
+			<artifactId>jetty-ee10-servlets</artifactId>
+			<version>${jetty.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty.ee10</groupId>
+			<artifactId>jetty-ee10-annotations</artifactId>
+			<version>${jetty.version}</version>
+		</dependency>
 
 		<!-- = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = -->
 		<!--                                                                       Testing -->

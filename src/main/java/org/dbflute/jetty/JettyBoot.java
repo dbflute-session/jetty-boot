@@ -296,11 +296,21 @@ public class JettyBoot {
         if (path != null && isWarableFile(path)) {
             context.setWar(warLocation.toExternalForm());
         } else {
-            context.setBaseResourceAsString(getResourceBase()); // #jakarta
+            String resourceBase = getResourceBase();
+            File file = new File(resourceBase);
+            String canonicalPath;
+            try {
+                canonicalPath = file.getCanonicalPath();
+            } catch (IOException e) {
+                throw new IllegalStateException("Failed to get canonical path: " + file, e);
+            }
+            Resource resource = context.newResource(canonicalPath);
+            context.setBaseResource(resource); // #jakarta
+            //context.setBaseResourceAsString(resourceBase); // #jakarta
         }
         context.setConfigurations(prepareConfigurations());
         context.setContextPath(contextPath);
-        setupClasspathJarResourceIfNeeds(context); // basically for local development (and e.g. swagger) 
+        //setupClasspathJarResourceIfNeeds(context); // basically for local development (and e.g. swagger) 
         return context;
     }
 
@@ -558,7 +568,10 @@ public class JettyBoot {
         for (String classpath : classpathList) {
             final String jarPath = convertClasspathToJarPath(classpath);
             final Resource jarResource = prepareJarResource(jarPath);
-            context.getMetaData().addContainerResource(jarResource); // #jakarta
+            // TODO jflute jetty jar headache (2024/08/07)
+            if (jarResource.isReadable()) {
+                context.getMetaData().addContainerResource(jarResource); // #jakarta
+            }
         }
     }
 
@@ -598,7 +611,10 @@ public class JettyBoot {
     }
 
     protected String convertClasspathToJarPath(String classpath) {
-        return "jar:file:" + classpath + "!/";
+        // 'jar:' prefix will be added by Jetty' URIUtil@toJarFileUri()
+        // and only 'file:' prefix can be accepted by ResourceFactory@newJarFileResource()
+        // so unneeded here (and also internal reference delimiter '!/' will be added)
+        return "file:" + classpath + "!/";
     }
 
     protected Resource prepareJarResource(String jarPath) { // #jakarta
@@ -608,6 +624,8 @@ public class JettyBoot {
         } catch (URISyntaxException e) {
             throw new IllegalStateException("Failed to create URL from the jar path: " + jarPath, e);
         }
+        //PathResourceFactory pathResourceFactory = new PathResourceFactory();
+        //return pathResourceFactory.newJarFileResource(uri);
         final URLResourceFactory resourceFactory = new URLResourceFactory();
         return resourceFactory.newJarFileResource(uri);
     }
